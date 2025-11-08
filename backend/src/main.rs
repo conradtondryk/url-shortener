@@ -56,6 +56,7 @@ fn main() -> Result<()> {
         // TODO: you wanna abstract this logic away somewhere.
         // probably make a UrlPair::new method which generates the shorturl for you.
         // main fn shouldnt have much low level logic in it
+        // TODO: consider using a uuid crate like https://docs.rs/uuid/latest/uuid/
         short_url: format!("ctondryk.dev/{}", rand::thread_rng().gen_range(0..1000000)),
         // TODO: again, really weird to be storing this as CliInput
         long_url: CliInput { url },
