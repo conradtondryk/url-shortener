@@ -1,10 +1,14 @@
 # Rust
+# TODO: you probs want the /backend/ stuff inside a gitignore in /backend/ itself instead of here.
+# in fact there already is one and it already excludes target/
 /backend/target/
+# TODO: dont gitignore lock files !! Learn why
 /backend/Cargo.lock
 **/*.rs.bk
 *.pdb
 
 # Node.js / React
+# TODO: again, put this in a gitignore inside frontend dir
 /frontend/node_modules/
 /frontend/dist/
 /frontend/.env
