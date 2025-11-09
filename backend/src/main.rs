@@ -30,6 +30,10 @@ impl UrlMap {
         serde_json::to_writer_pretty(File::create(FILE_PATH)?, &self.0)?;
         Ok(())
     }
+
+    fn insert(&mut self, short_url: String, long_url: String) {
+        self.0.insert(short_url, long_url);
+    }
 }
 
 fn main() -> Result<()> {
@@ -42,7 +46,7 @@ fn main() -> Result<()> {
         .map(char::from)
         .collect::<String>();
 
-    url_map.0.insert(short_url.clone(), url);
+    url_map.insert(short_url.clone(), url);
     url_map.save()?;
 
     println!("Short URL: ctondryk.dev/{short_url}");
