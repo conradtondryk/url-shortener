@@ -36,10 +36,12 @@ impl Pairs {
 fn main() -> Result<()> {
     let CliInput { url } = CliInput::parse();
     let mut list = Pairs::load()?;
+    let short_url = format!("ctondryk.dev/{}", rand::thread_rng().gen_range(0..1000000));
     list.0.push(UrlPair {
-        short_url: format!("ctondryk.dev/{}", rand::thread_rng().gen_range(0..1000000)),
+        short_url: short_url.clone(),
         long_url: CliInput { url },
     });
     list.save()?;
+    println!("Short URL: {short_url}");
     Ok(())
 }
