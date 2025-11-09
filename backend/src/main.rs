@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use rand::Rng;
+use rand::{Rng, distributions::Alphanumeric};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File};
 use std::io::ErrorKind;
@@ -36,12 +36,17 @@ impl Pairs {
 fn main() -> Result<()> {
     let CliInput { url } = CliInput::parse();
     let mut list = Pairs::load()?;
-    let short_url = format!("ctondryk.dev/{}", rand::thread_rng().gen_range(0..1000000));
+    let short_url = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(7)
+        .map(char::from)
+        .collect::<String>();
+
     list.0.push(UrlPair {
         short_url: short_url.clone(),
         long_url: CliInput { url },
     });
     list.save()?;
-    println!("Short URL: {short_url}");
+    println!("Short URL: ctondryk.dev/{short_url}");
     Ok(())
 }
