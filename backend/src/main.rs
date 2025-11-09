@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::fs::{self, File};
 use std::io::ErrorKind;
 
+const FILE_PATH: &str = "urls.json";
+
 #[derive(Deserialize, Serialize, Parser)]
 struct CliInput {
     url: String,
@@ -21,14 +23,14 @@ struct Pairs(Vec<UrlPair>);
 
 impl Pairs {
     fn load() -> Result<Self> {
-        match fs::read_to_string("urls.json") {
+        match fs::read_to_string(FILE_PATH) {
             Ok(data) => serde_json::from_str(&data).map_err(Into::into),
             Err(e) if e.kind() == ErrorKind::NotFound => Ok(Pairs(vec![])),
             Err(e) => Err(e.into()),
         }
     }
     fn save(&self) -> Result<()> {
-        serde_json::to_writer(File::create("urls.json")?, &self.0)?;
+        serde_json::to_writer(File::create(FILE_PATH)?, &self.0)?;
         Ok(())
     }
 }
