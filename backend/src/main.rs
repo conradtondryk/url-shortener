@@ -14,6 +14,19 @@ struct CliInput {
     url: String,
 }
 
+struct ShortUrl(String);
+
+impl ShortUrl {
+    fn new() -> Self {
+        Self(
+            rand::thread_rng()
+                .sample_iter(&Alphanumeric)
+                .take(7)
+                .map(char::from)
+                .collect::<String>(),
+        )
+    }
+}
 #[derive(Deserialize, Serialize)]
 struct UrlMap(HashMap<String, String>);
 
@@ -40,16 +53,9 @@ fn main() -> Result<()> {
     let CliInput { url } = CliInput::parse();
     let mut url_map = UrlMap::load()?;
 
-    let short_url = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(7)
-        .map(char::from)
-        .collect::<String>();
-
-    url_map.insert(short_url.clone(), url);
+    let short_url = ShortUrl::new();
+    url_map.insert(short_url.0.clone(), url);
     url_map.save()?;
-
-    println!("Short URL: ctondryk.dev/{short_url}");
-
+    println!("Short URL: ctondryk.dev/{}", short_url.0);
     Ok(())
 }
