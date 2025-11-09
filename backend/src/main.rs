@@ -4,9 +4,10 @@ use rand::Rng;
 use rand::distributions::Alphanumeric;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::ErrorKind;
-
 const FILE_PATH: &str = "urls.json";
 
 #[derive(Deserialize, Serialize, Parser)]
@@ -15,6 +16,12 @@ struct CliInput {
 }
 
 struct ShortUrl(String);
+
+impl Display for ShortUrl {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl ShortUrl {
     fn new() -> Self {
@@ -54,8 +61,8 @@ fn main() -> Result<()> {
     let mut url_map = UrlMap::load()?;
 
     let short_url = ShortUrl::new();
-    url_map.insert(short_url.0.clone(), url);
+    url_map.insert(short_url.to_string(), url);
     url_map.save()?;
-    println!("Short URL: ctondryk.dev/{}", short_url.0);
+    println!("Short URL: ctondryk.dev/{}", short_url);
     Ok(())
 }
