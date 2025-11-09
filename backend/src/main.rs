@@ -15,6 +15,8 @@ struct CliInput {
     url: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[serde(transparent)]
 struct ShortUrl(String);
 
 impl Display for ShortUrl {
@@ -35,7 +37,7 @@ impl ShortUrl {
     }
 }
 #[derive(Deserialize, Serialize)]
-struct UrlMap(HashMap<String, String>);
+struct UrlMap(HashMap<ShortUrl, String>);
 
 impl UrlMap {
     fn load() -> Result<Self> {
@@ -53,7 +55,7 @@ impl UrlMap {
 
     fn insert(&mut self, long_url: String) -> ShortUrl {
         let short_url = ShortUrl::new();
-        self.0.insert(short_url.to_string(), long_url);
+        self.0.insert(short_url.clone(), long_url);
         short_url
     }
 }
