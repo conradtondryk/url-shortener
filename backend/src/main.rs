@@ -51,8 +51,10 @@ impl UrlMap {
         Ok(())
     }
 
-    fn insert(&mut self, short_url: String, long_url: String) {
-        self.0.insert(short_url, long_url);
+    fn insert(&mut self, long_url: String) -> ShortUrl {
+        let short_url = ShortUrl::new();
+        self.0.insert(short_url.to_string(), long_url);
+        short_url
     }
 }
 
@@ -60,9 +62,9 @@ fn main() -> Result<()> {
     let CliInput { url } = CliInput::parse();
     let mut url_map = UrlMap::load()?;
 
-    let short_url = ShortUrl::new();
-    url_map.insert(short_url.to_string(), url);
+    let short_url = url_map.insert(url.clone());
     url_map.save()?;
+
     println!("Short URL: ctondryk.dev/{}", short_url);
     Ok(())
 }
