@@ -11,7 +11,7 @@ use std::io::ErrorKind;
 use url::Url;
 const FILE_PATH: &str = "urls.json";
 
-#[derive(Deserialize, Serialize, Parser)]
+#[derive(Parser)]
 struct CliInput {
     url: Url,
 }
