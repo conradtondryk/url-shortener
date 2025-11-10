@@ -8,11 +8,12 @@ use std::fmt;
 use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::ErrorKind;
+use url::Url;
 const FILE_PATH: &str = "urls.json";
 
 #[derive(Deserialize, Serialize, Parser)]
 struct CliInput {
-    url: String,
+    url: Url,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
@@ -37,7 +38,7 @@ impl ShortUrl {
     }
 }
 #[derive(Deserialize, Serialize)]
-struct UrlMap(HashMap<ShortUrl, String>);
+struct UrlMap(HashMap<ShortUrl, Url>);
 
 impl UrlMap {
     fn load() -> Result<Self> {
@@ -53,7 +54,7 @@ impl UrlMap {
         Ok(())
     }
 
-    fn insert(&mut self, long_url: String) -> ShortUrl {
+    fn insert(&mut self, long_url: Url) -> ShortUrl {
         let short_url = ShortUrl::new();
         self.0.insert(short_url.clone(), long_url);
         short_url
@@ -64,7 +65,7 @@ fn main() -> Result<()> {
     let CliInput { url } = CliInput::parse();
     let mut url_map = UrlMap::load()?;
 
-    let short_url = url_map.insert(url.clone());
+    let short_url = url_map.insert(url);
     url_map.save()?;
 
     println!("Short URL: ctondryk.dev/{}", short_url);
