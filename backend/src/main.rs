@@ -12,21 +12,26 @@ use url::Url;
 const FILE_PATH: &str = "urls.json";
 
 #[derive(Parser)]
-struct CliInput {
-    url: Url,
+struct LongUrl {
+    long_url: Url,
+}
+
+struct ShortUrl {
+    short_code: ShortCode,
+    long_url: Url,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(transparent)]
-struct ShortUrl(String);
+struct ShortCode(String);
 
-impl Display for ShortUrl {
+impl Display for ShortCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl ShortUrl {
+impl ShortCode {
     fn new() -> Self {
         Self(
             rand::thread_rng()
@@ -38,7 +43,7 @@ impl ShortUrl {
     }
 }
 #[derive(Deserialize, Serialize)]
-struct UrlMap(HashMap<ShortUrl, Url>);
+struct UrlMap(HashMap<ShortCode, Url>);
 
 impl UrlMap {
     fn load() -> Result<Self> {
@@ -54,20 +59,20 @@ impl UrlMap {
         Ok(())
     }
 
-    fn insert(&mut self, long_url: Url) -> ShortUrl {
-        let short_url = ShortUrl::new();
-        self.0.insert(short_url.clone(), long_url);
-        short_url
+    fn insert(&mut self, long_url: Url) -> ShortCode {
+        let short_code = ShortCode::new();
+        self.0.insert(short_code.clone(), long_url);
+        short_code
     }
 }
 
 fn main() -> Result<()> {
-    let CliInput { url } = CliInput::parse();
+    let LongUrl { long_url } = LongUrl::parse();
     let mut url_map = UrlMap::load()?;
 
-    let short_url = url_map.insert(url);
+    let short_code = url_map.insert(long_url);
     url_map.save()?;
 
-    println!("Short URL: ctondryk.dev/{}", short_url);
+    println!("Short URL: ctondryk.dev/{}", short_code);
     Ok(())
 }
