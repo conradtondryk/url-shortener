@@ -16,9 +16,9 @@ struct LongUrl {
     long_url: Url,
 }
 
-struct ShortUrl {
+struct UrlMapEntry {
     short_code: ShortCode,
-    long_url: Url,
+    url: Url,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
@@ -59,10 +59,10 @@ impl UrlMap {
         Ok(())
     }
 
-    fn insert(&mut self, long_url: Url) -> ShortCode {
-        let short_code = ShortCode::new();
-        self.0.insert(short_code.clone(), long_url);
-        short_code
+    fn insert(&mut self, url_map_entry: UrlMapEntry) -> ShortCode {
+        self.0
+            .insert(url_map_entry.short_code.clone(), url_map_entry.url);
+        url_map_entry.short_code
     }
 }
 
@@ -70,7 +70,10 @@ fn main() -> Result<()> {
     let LongUrl { long_url } = LongUrl::parse();
     let mut url_map = UrlMap::load()?;
 
-    let short_code = url_map.insert(long_url);
+    let short_code = url_map.insert(UrlMapEntry {
+        url: long_url,
+        short_code: ShortCode::new().clone(),
+    });
     url_map.save()?;
 
     println!("Short URL: ctondryk.dev/{}", short_code);
