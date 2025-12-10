@@ -10,10 +10,13 @@ use std::fmt;
 use std::fmt::Display;
 use std::fs::{self, File};
 use std::io::ErrorKind;
+use std::sync::{Arc, Mutex};
 use url::Url;
 const FILE_PATH: &str = "urls.json";
 use axum::extract::Path;
-
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::Redirect;
 #[derive(Parser)]
 struct LongUrl {
     long_url: Url,
@@ -69,12 +72,13 @@ impl UrlMap {
     }
 }
 
-async fn app() -> Result<(), Box<dyn std::error::Error>> {
+async fn start_server(shared_map: Arc<Mutex<UrlMap>>) -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let app = Router::new()
         .route("/", get(root))
-        .route("/hello/:name", get(hello));
+        .route("/:short_code", get(redirect_handler))
+        .with_state(shared_map);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
 
@@ -84,13 +88,21 @@ async fn app() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+async fn redirect_handler(
+    Path(short_code): Path<String>,
+    State(url_map): State<Arc<Mutex<UrlMap>>>,
+) -> Result<Redirect, (StatusCode, String)> {
+    let map = url_map.lock().unwrap();
 
-async fn root() -> &'static str {
-    "Hello, World!"
+    if let Some(long_url) = map.0.get(&ShortCode(short_code)) {
+        Ok(Redirect::permanent(long_url.as_str()))
+    } else {
+        Err((StatusCode::NOT_FOUND, "Short link not found".to_string()))
+    }
 }
 
-async fn hello(Path(name): Path<String>) -> String {
-    format!("Hello, {}!", name)
+async fn root() -> &'static str {
+    "Hello, this is the root page! Enter your short URL in the browser to be redirected to the original URL."
 }
 
 #[tokio::main]
@@ -99,12 +111,14 @@ async fn main() -> Result<()> {
     let mut url_map = UrlMap::load()?;
 
     let short_code = url_map.insert(UrlMapEntry {
-        url: long_url,
         short_code: ShortCode::new().clone(),
+        url: long_url,
     });
     url_map.save()?;
 
-    println!("Short URL: ctondryk.dev/{}", short_code);
-    app().await.unwrap();
+    let shared_map = Arc::new(Mutex::new(url_map));
+    println!("Short URL: http://localhost:3000/{}", short_code);
+    start_server(shared_map).await?;
+
     Ok(())
 }
