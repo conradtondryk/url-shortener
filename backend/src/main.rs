@@ -1,4 +1,6 @@
 use anyhow::Result;
+use axum::Router;
+use axum::routing::get;
 use clap::Parser;
 use rand::Rng;
 use rand::distributions::Alphanumeric;
@@ -10,6 +12,7 @@ use std::fs::{self, File};
 use std::io::ErrorKind;
 use url::Url;
 const FILE_PATH: &str = "urls.json";
+use axum::extract::Path;
 
 #[derive(Parser)]
 struct LongUrl {
@@ -66,7 +69,32 @@ impl UrlMap {
     }
 }
 
-fn main() -> Result<()> {
+async fn app() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
+
+    let app = Router::new()
+        .route("/", get(root))
+        .route("/hello/:name", get(hello));
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+
+    println!("Server running on http://127.0.0.1:3000");
+
+    axum::serve(listener, app).await?;
+
+    Ok(())
+}
+
+async fn root() -> &'static str {
+    "Hello, World!"
+}
+
+async fn hello(Path(name): Path<String>) -> String {
+    format!("Hello, {}!", name)
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
     let LongUrl { long_url } = LongUrl::parse();
     let mut url_map = UrlMap::load()?;
 
@@ -77,5 +105,6 @@ fn main() -> Result<()> {
     url_map.save()?;
 
     println!("Short URL: ctondryk.dev/{}", short_code);
+    app().await.unwrap();
     Ok(())
 }
